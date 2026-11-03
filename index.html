@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Galeria Vetor Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: cabeçalho com logo + trilha de navegação; pastas em cards com aba; fotos em grade; aba Pessoas agrupa por rosto; visualizador em tela cheia com botão de download. */
+:root {
+  --bg: #0a111c;
+  --surface: #111b2b;
+  --surface-2: #172338;
+  --line: #22324b;
+  --fg: #f2f5f9;
+  --muted: #93a1b8;
+  --lime: #c6ef3e;
+  --lime-ink: #0a111c;
+  --font-display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
+  --font-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-block: 20px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-tap-highlight-color: transparent;
+}
+a { color: inherit; }
+.wrap { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.brand svg { width: 34px; height: auto; display: block; }
+.brand b { font-family: var(--font-display); font-weight: 800; font-size: 18px; letter-spacing: -.01em; }
+.brand span { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); line-height: 1.2; }
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); }
+.crumbs a { text-decoration: none; padding: 4px 2px; }
+.crumbs a:hover { color: var(--fg); }
+.crumbs i { font-style: normal; opacity: .5; }
+.crumbs [aria-current] { color: var(--fg); font-weight: 600; }
+
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(32px, 7vw, 56px); line-height: 1.02; letter-spacing: -.025em; margin: 0; text-wrap: balance; }
+.lead { color: var(--muted); max-width: 52ch; margin: 10px 0 0; }
+.head { display: flex; flex-direction: column; }
+
+.folders { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
+.folder {
+  position: relative; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px;
+  min-height: 150px; padding: 18px; margin-top: 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px 14px 14px 14px;
+  text-decoration: none; transition: border-color .18s, background .18s, transform .18s;
+}
+.folder::before {
+  content: ""; position: absolute; left: -1px; top: -14px; width: 84px; height: 14px;
+  background: var(--surface); border: 1px solid var(--line); border-bottom: 0; border-radius: 8px 8px 0 0;
+  transition: border-color .18s, background .18s;
+}
+.folder:hover, .folder:focus-visible { background: var(--surface-2); border-color: var(--lime); transform: translateY(-2px); }
+.folder:hover::before, .folder:focus-visible::before { background: var(--surface-2); border-color: var(--lime); }
+.folder .name { font-family: var(--font-display); font-weight: 800; font-size: 24px; letter-spacing: -.015em; line-height: 1.1; }
+.folder .desc { color: var(--muted); font-size: 14px; }
+.folder .count { font-family: var(--font-mono); font-size: 12px; color: var(--lime); letter-spacing: .04em; margin-bottom: auto; }
+
+.notice { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; color: var(--muted); font-size: 14px; }
+.notice svg { flex: none; width: 18px; height: 18px; margin-top: 2px; color: var(--lime); }
+.notice b { color: var(--fg); font-weight: 600; }
+
+.foot { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 24px; margin-top: 8px; border-top: 1px solid var(--line); }
+.ig { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 12px; text-decoration: none; }
+.ig svg { width: 14px; height: 14px; }
+.ig:hover, .ig:focus-visible { color: var(--fg); border-color: var(--lime); outline: none; }
+.credit { display: flex; align-items: center; gap: 12px; align-self: flex-start; padding: 8px 16px 8px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.credit .mono { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: #05080e; border: 1px solid var(--line); font-family: var(--font-display); font-weight: 800; font-size: 20px; }
+.credit small { display: block; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); line-height: 1.2; }
+.credit b { font-weight: 600; font-size: 15px; line-height: 1.25; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 640px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; } }
+@media (min-width: 960px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ph { position: relative; display: block; width: 100%; aspect-ratio: 2 / 3; margin: 0; padding: 0; border: 0; background: var(--surface); border-radius: 10px; overflow: hidden; cursor: zoom-in; }
+.ph img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ph .tag { position: absolute; left: 8px; bottom: 8px; font-family: var(--font-mono); font-size: 11px; padding: 3px 7px; border-radius: 6px; background: rgba(10,17,28,.82); color: var(--fg); letter-spacing: .03em; }
+.ph:hover { outline: 2px solid var(--lime); outline-offset: -2px; }
+.ph:focus-visible, .folder:focus-visible, .btn:focus-visible, .icon:focus-visible, .crumbs a:focus-visible, .tabs a:focus-visible, .pp:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
+
+.empty { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; padding: 28px 22px; border: 1px dashed var(--line); border-radius: 14px; color: var(--muted); }
+.empty b { color: var(--fg); font-family: var(--font-display); font-size: 20px; font-weight: 800; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 20px; border-radius: 999px; border: 0; background: var(--lime); color: var(--lime-ink); font: 600 15px var(--font-body); text-decoration: none; cursor: pointer; }
+.btn:hover { filter: brightness(1.06); }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+.btn svg { width: 18px; height: 18px; }
+select.btn { appearance: none; -webkit-appearance: none; padding-right: 18px; }
+
+/* abas Fotos | Pessoas */
+.tabs { display: flex; gap: 4px; padding: 4px; align-self: flex-start; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; }
+.tabs a { padding: 8px 20px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 14px; color: var(--muted); }
+.tabs a[aria-current] { background: var(--lime); color: var(--lime-ink); }
+
+/* pessoas */
+.status { padding: 16px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.status b { color: var(--fg); font-weight: 600; }
+.bar { height: 6px; border-radius: 3px; background: var(--line); margin-top: 12px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--lime); transition: width .2s; }
+.people { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 10px; }
+@media (min-width: 640px) { .people { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (min-width: 960px) { .people { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+.pp { display: block; text-align: center; text-decoration: none; }
+.pp img { width: 100%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; display: block; background: var(--surface); border: 2px solid var(--line); transition: border-color .18s; }
+.pp:hover img, .pp:focus-visible img { border-color: var(--lime); }
+.pp .nm { margin-top: 8px; font-size: 14px; line-height: 1.25; font-weight: 600; word-break: break-word; }
+.pp .ct { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.phead { display: flex; gap: 16px; align-items: center; }
+.phead img { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 2px solid var(--lime); flex: none; }
+.phead input { width: 100%; background: var(--surface); border: 1px solid var(--line); color: var(--fg); border-radius: 12px; padding: 11px 14px; font: 500 16px var(--font-body); }
+.phead input:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
+.phead small { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 14px 4px 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); font-size: 13px; text-decoration: none; }
+.chip img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+
+.lb { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; background: #060a11;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
+.lb[hidden] { display: none; }
+.lb-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; }
+.lb-bar .code { font-family: var(--font-mono); font-size: 14px; letter-spacing: .04em; }
+.lb-bar .code small { color: var(--muted); font-family: var(--font-body); margin-left: 8px; letter-spacing: 0; }
+.icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.icon svg { width: 20px; height: 20px; }
+.lb-stage { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.lb-stage img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; }
+.lb-nav { position: absolute; top: 50%; transform: translateY(-50%); }
+.lb-nav.prev { left: 0; } .lb-nav.next { right: 0; }
+.lb-foot { display: flex; flex-direction: column; gap: 10px; align-items: center; padding: 12px 0 14px; text-align: center; }
+.lb-foot p { margin: 0; color: var(--muted); font-size: 13px; max-width: 46ch; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 60; background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; max-width: calc(100% - 32px); text-align: center; }
+.toast[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style><style>html{color-scheme:dark;background:#0a111c}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+
+<div class="wrap" id="app"></div>
+
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Visualizar foto">
+  <div class="lb-bar">
+    <div class="code" id="lbCode"></div>
+    <button class="icon" id="lbClose" aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="lb-stage">
+    <img id="lbImg" alt="">
+    <button class="icon lb-nav prev" id="lbPrev" aria-label="Foto anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button class="icon lb-nav next" id="lbNext" aria-label="Próxima foto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+  <div class="lb-foot">
+    <div class="chips" id="lbChips"></div>
+    <div id="lbAction"></div>
+    <p id="lbCredit"></p>
+    <p>Download livre. No celular, a foto pode ir direto para a sua galeria.</p>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const DATA = {"whatsapp": "5538999471986", "clientes": [{"id": "rayon", "nome": "Rayon Videomaker", "descricao": "Fotos de eventos e jogos", "credito": "Rayon Randler", "pastas": [{"id": "ARUF", "nome": "ARUF", "descricao": "Associação Recreativa Unaiense de Futebol"}]}], "fotos": [{"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-01", "src": "f-ARUF-01.jpg", "thumb": "m-ARUF-01.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-02", "src": "f-ARUF-02.jpg", "thumb": "m-ARUF-02.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-03", "src": "f-ARUF-03.jpg", "thumb": "m-ARUF-03.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-04", "src": "f-ARUF-04.jpg", "thumb": "m-ARUF-04.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-05", "src": "f-ARUF-05.jpg", "thumb": "m-ARUF-05.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-06", "src": "f-ARUF-06.jpg", "thumb": "m-ARUF-06.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-07", "src": "f-ARUF-07.jpg", "thumb": "m-ARUF-07.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-08", "src": "f-ARUF-08.jpg", "thumb": "m-ARUF-08.jpg", "w": 1024, "h": 1535}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-09", "src": "f-ARUF-09.jpg", "thumb": "m-ARUF-09.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-10", "src": "f-ARUF-10.jpg", "thumb": "m-ARUF-10.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-11", "src": "f-ARUF-11.jpg", "thumb": "m-ARUF-11.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-12", "src": "f-ARUF-12.jpg", "thumb": "m-ARUF-12.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-13", "src": "f-ARUF-13.jpg", "thumb": "m-ARUF-13.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-14", "src": "f-ARUF-14.jpg", "thumb": "m-ARUF-14.jpg", "w": 1717, "h": 2576}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-15", "src": "f-ARUF-15.jpg", "thumb": "m-ARUF-15.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-16", "src": "f-ARUF-16.jpg", "thumb": "m-ARUF-16.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-17", "src": "f-ARUF-17.jpg", "thumb": "m-ARUF-17.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-18", "src": "f-ARUF-18.jpg", "thumb": "m-ARUF-18.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-19", "src": "f-ARUF-19.jpg", "thumb": "m-ARUF-19.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-20", "src": "f-ARUF-20.jpg", "thumb": "m-ARUF-20.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-21", "src": "f-ARUF-21.jpg", "thumb": "m-ARUF-21.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-22", "src": "f-ARUF-22.jpg", "thumb": "m-ARUF-22.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-23", "src": "f-ARUF-23.jpg", "thumb": "m-ARUF-23.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-24", "src": "f-ARUF-24.jpg", "thumb": "m-ARUF-24.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-25", "src": "f-ARUF-25.jpg", "thumb": "m-ARUF-25.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-26", "src": "f-ARUF-26.jpg", "thumb": "m-ARUF-26.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-27", "src": "f-ARUF-27.jpg", "thumb": "m-ARUF-27.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-28", "src": "f-ARUF-28.jpg", "thumb": "m-ARUF-28.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-29", "src": "f-ARUF-29.jpg", "thumb": "m-ARUF-29.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-30", "src": "f-ARUF-30.jpg", "thumb": "m-ARUF-30.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-31", "src": "f-ARUF-31.jpg", "thumb": "m-ARUF-31.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-32", "src": "f-ARUF-32.jpg", "thumb": "m-ARUF-32.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-33", "src": "f-ARUF-33.jpg", "thumb": "m-ARUF-33.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-34", "src": "f-ARUF-34.jpg", "thumb": "m-ARUF-34.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-35", "src": "f-ARUF-35.jpg", "thumb": "m-ARUF-35.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-36", "src": "f-ARUF-36.jpg", "thumb": "m-ARUF-36.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-37", "src": "f-ARUF-37.jpg", "thumb": "m-ARUF-37.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-38", "src": "f-ARUF-38.jpg", "thumb": "m-ARUF-38.jpg", "w": 1024, "h": 1536}, {"cliente": "rayon", "pasta": "ARUF", "codigo": "ARUF-39", "src": "f-ARUF-39.jpg", "thumb": "m-ARUF-39.jpg", "w": 1024, "h": 1536}]};
+DATA.fotos.forEach((f, i) => { f.i = i; });
+
+const LOGO = '<svg viewBox="0 0 336 329" aria-hidden="true"><polygon fill="#f4f6fa" points="0,78 90,78 145,178 145,328"/><polygon fill="#c6ef3e" points="145,178 246,0 335,0 145,328"/></svg>';
+const ICON_DL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14"/></svg>';
+const ICON_INFO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/></svg>';
+
+const app = document.getElementById('app');
+const lb = document.getElementById('lb');
+let current = [];   // fotos da tela atual
+let idx = 0;
+
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === 'class') n.className = v;
+    else if (k === 'html') n.innerHTML = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c != null) n.append(c.nodeType ? c : document.createTextNode(c));
+  return n;
+}
+const plural = n => n === 1 ? '1 foto' : n + ' fotos';
+const clienteById = id => DATA.clientes.find(c => c.id === id);
+const fotosDe = (cli, pasta) => DATA.fotos.filter(f => f.cliente === cli && (!pasta || f.pasta === pasta));
+
+/* armazenamento leve (nomes e correções ficam só neste aparelho) */
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+let names = store.get('vetor_nomes_v1') || {};     // chave do rosto -> nome
+let merges = store.get('vetor_uniao_v1') || [];    // [[chaveA, chaveB], ...]
+
+function topbar(crumbs) {
+  const nav = el('nav', { class: 'crumbs', 'aria-label': 'Navegação' });
+  crumbs.forEach((c, i) => {
+    if (i) nav.append(el('i', { 'aria-hidden': 'true' }, '/'));
+    nav.append(c.href ? el('a', { href: c.href }, c.label) : el('span', { 'aria-current': 'page' }, c.label));
+  });
+  return el('header', { class: 'top' },
+    el('a', { class: 'brand', href: '#', html: LOGO + '<div><b>Vetor Digital</b><span>Galeria</span></div>' }),
+    nav);
+}
+
+function folderCard(href, nome, desc, n) {
+  return el('a', { class: 'folder', href },
+    el('span', { class: 'count' }, plural(n)),
+    el('span', { class: 'name' }, nome),
+    el('span', { class: 'desc' }, desc));
+}
+
+function notice() {
+  return el('div', { class: 'notice', html: ICON_INFO },
+    el('div', {}, el('b', {}, 'Download livre. '), 'Toque numa foto para abrir e baixar. Na aba Pessoas você encontra todas as fotos de cada atleta.'));
+}
+
+function viewHome() {
+  const out = [topbar([{ label: 'Início' }])];
+  out.push(el('div', { class: 'head' },
+    el('h1', {}, 'Galeria de fotos'),
+    el('p', { class: 'lead' }, 'Escolha uma pasta, veja as fotos e baixe as suas.')));
+  const folders = el('div', { class: 'folders' });
+  DATA.clientes.forEach(c => folders.append(folderCard('#' + c.id, c.nome, c.descricao, fotosDe(c.id).length)));
+  out.push(folders);
+  return out;
+}
+
+function viewCliente(c) {
+  const out = [topbar([{ label: 'Início', href: '#' }, { label: c.nome }])];
+  out.push(el('div', { class: 'head' }, el('h1', {}, c.nome), el('p', { class: 'lead' }, c.descricao + '.')));
+  const folders = el('div', { class: 'folders' });
+  c.pastas.forEach(p => folders.append(folderCard('#' + c.id + '-' + p.id.toLowerCase(), p.nome, p.descricao, fotosDe(c.id, p.id).length)));
+  out.push(folders);
+  return out;
+}
+
+function tabs(c, pasta, ativa) {
+  const base = '#' + c.id + '-' + pasta.id.toLowerCase();
+  const a1 = el('a', { href: base }, 'Fotos');
+  const a2 = el('a', { href: base + '-pessoas' }, 'Pessoas');
+  (ativa === 'fotos' ? a1 : a2).setAttribute('aria-current', 'page');
+  return el('nav', { class: 'tabs', 'aria-label': 'Ver por' }, a1, a2);
+}
+
+function creditBlock(c) {
+  return el('div', { class: 'credit' }, el('span', { class: 'mono' }, 'R'), el('div', {}, el('small', {}, 'Fotografado por'), el('b', {}, c.credito + ' | Filmmaker')));
+}
+
+function photoGrid(list) {
+  const grid = el('div', { class: 'grid' });
+  list.forEach((f, i) => {
+    const img = el('img', { src: f.thumb || f.src, width: f.w, height: f.h, alt: 'Foto ' + f.codigo, loading: 'lazy' });
+    grid.append(el('button', { class: 'ph', 'aria-label': 'Abrir foto ' + f.codigo, onclick: () => openLb(i) }, img, el('span', { class: 'tag' }, f.codigo)));
+  });
+  return grid;
+}
+
+function viewGaleria(c, pasta) {
+  const fotos = fotosDe(c.id, pasta.id);
+  current = fotos;
+  const out = [topbar([{ label: 'Início', href: '#' }, { label: c.nome, href: '#' + c.id }, { label: pasta.nome }])];
+  out.push(el('div', { class: 'head' }, el('h1', {}, pasta.nome), el('p', { class: 'lead' }, plural(fotos.length) + ' · ' + pasta.descricao)));
+  out.push(creditBlock(c));
+  out.push(tabs(c, pasta, 'fotos'));
+  out.push(notice());
+  if (!fotos.length) {
+    out.push(el('div', { class: 'empty' }, el('b', {}, 'Ainda não há fotos aqui'), 'As fotos aparecem nesta pasta assim que forem publicadas.'));
+    return out;
+  }
+  out.push(photoGrid(fotos));
+  return out;
+}
+
+/* ---------- pessoas (agrupamento por rosto, roda no aparelho) ---------- */
+const FACE_LIB = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js';
+const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+const THRESH = 0.55;   // distância máxima para considerar a mesma pessoa
+const MIN_FACE = 48;   // ignora rostos muito pequenos (px)
+const FACE = { status: 'idle', progress: 0, msg: '', faces: [], people: [] };
+
+function dist(a, b) { let s = 0; for (let i = 0; i < a.length; i++) { const d = a[i] - b[i]; s += d * d; } return Math.sqrt(s); }
+function clusterFaces(list, thresh) {
+  let cl = list.map((_, i) => [i]);
+  const D = (A, B) => { let s = 0; for (const i of A) for (const j of B) s += dist(list[i].desc, list[j].desc); return s / (A.length * B.length); };
+  while (cl.length > 1) {
+    let best = Infinity, bi = -1, bj = -1;
+    for (let i = 0; i < cl.length; i++) for (let j = i + 1; j < cl.length; j++) {
+      const d = D(cl[i], cl[j]); if (d < best) { best = d; bi = i; bj = j; }
+    }
+    if (best >= thresh) break;
+    cl[bi] = cl[bi].concat(cl[bj]); cl.splice(bj, 1);
+  }
+  return cl;
+}
+function buildPeople() {
+  const cl = clusterFaces(FACE.faces, THRESH);
+  const keyToCl = {}; cl.forEach((c, ci) => c.forEach(fi => { keyToCl[FACE.faces[fi].key] = ci; }));
+  const parent = cl.map((_, i) => i);
+  const find = x => parent[x] === x ? x : (parent[x] = find(parent[x]));
+  merges.forEach(([a, b]) => { if (keyToCl[a] !== undefined && keyToCl[b] !== undefined) parent[find(keyToCl[a])] = find(keyToCl[b]); });
+  const groups = {};
+  cl.forEach((c, ci) => { const r = find(ci); (groups[r] = groups[r] || []).push(...c); });
+  FACE.people = Object.values(groups).map(fidx => {
+    const photos = [...new Set(fidx.map(i => FACE.faces[i].f))].sort((a, b) => a - b);
+    const cover = fidx.slice().sort((a, b) => FACE.faces[b].w - FACE.faces[a].w)[0];
+    const id = fidx.map(i => FACE.faces[i].key).sort()[0];
+    return { id, keys: fidx.map(i => FACE.faces[i].key), photos, crop: FACE.faces[cover].crop, name: names[id] || '' };
+  }).sort((a, b) => b.photos.length - a.photos.length || (a.id < b.id ? -1 : 1));
+  FACE.people.forEach((p, i) => { p.n = i + 1; p.label = p.name || ('Pessoa ' + (i + 1)); });
+}
+function loadLib() {
+  return new Promise((res, rej) => {
+    if (window.faceapi) return res();
+    const s = document.createElement('script'); s.src = FACE_LIB; s.onload = res; s.onerror = () => rej(new Error('lib'));
+    document.head.appendChild(s);
+  });
+}
+function setProgress(p) {
+  FACE.progress = p;
+  const b = document.getElementById('faceBar'); if (b) b.style.width = Math.round(p * 100) + '%';
+  const t = document.getElementById('faceTxt'); if (t) t.textContent = Math.round(p * DATA.fotos.length) + ' de ' + DATA.fotos.length + ' fotos';
+}
+async function analisar() {
+  if (FACE.status === 'running' || FACE.status === 'done') return;
+  FACE.status = 'running'; FACE.msg = '';
+  const fotos = DATA.fotos;
+  const cacheKey = 'vetor_rostos_v1:' + fotos.map(f => f.codigo).join(',');
+  try {
+    const cached = store.get(cacheKey);
+    if (cached && cached.length) { FACE.faces = cached; }
+    else {
+      await loadLib();
+      await faceapi.tf.ready();
+      await Promise.all([
+        faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+      ]);
+      const faces = [];
+      for (let k = 0; k < fotos.length; k++) {
+        const f = fotos[k];
+        const img = new Image(); img.src = f.src; await img.decode();
+        const res = await faceapi.detectAllFaces(img, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.6 }))
+                                 .withFaceLandmarks().withFaceDescriptors();
+        res.forEach((r, n) => {
+          const b = r.detection.box;
+          if (b.width < MIN_FACE) return;
+          const s = Math.max(b.width, b.height) * 1.5, cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+          const cv = document.createElement('canvas'); cv.width = cv.height = 112;
+          cv.getContext('2d').drawImage(img, cx - s / 2, cy - s / 2, s, s, 0, 0, 112, 112);
+          faces.push({ f: f.i, key: f.codigo + ':' + n, w: b.width, desc: Array.from(r.descriptor), crop: cv.toDataURL('image/jpeg', 0.8) });
+        });
+        setProgress((k + 1) / fotos.length);
+      }
+      FACE.faces = faces;
+      store.set(cacheKey, faces);
+    }
+    buildPeople(); FACE.status = 'done';
+  } catch (e) {
+    FACE.status = 'error';
+    FACE.msg = (e && e.message === 'lib')
+      ? 'Não consegui carregar o reconhecimento de rostos. Ele precisa de internet na primeira vez.'
+      : 'Algo deu errado ao analisar os rostos' + (e && e.message ? ': ' + e.message : '.');
+  }
+  if (/pessoas/.test(location.hash)) route();
+}
+function nomear(p, nome) { names[p.id] = nome.trim(); store.set('vetor_nomes_v1', names); buildPeople(); }
+
+function peopleHeader(c, pasta, titulo, lead) {
+  return [topbar([{ label: 'Início', href: '#' }, { label: c.nome, href: '#' + c.id }, { label: pasta.nome, href: '#' + c.id + '-' + pasta.id.toLowerCase() }, { label: titulo }]),
+    el('div', { class: 'head' }, el('h1', {}, titulo), el('p', { class: 'lead' }, lead))];
+}
+
+function viewPessoas(c, pasta) {
+  const base = '#' + c.id + '-' + pasta.id.toLowerCase();
+  const out = peopleHeader(c, pasta, 'Pessoas', 'Todas as fotos de cada atleta, reunidas pelo rosto.');
+  out.push(tabs(c, pasta, 'pessoas'));
+  if (FACE.status === 'idle') setTimeout(analisar, 0);
+  if (FACE.status === 'idle' || FACE.status === 'running') {
+    out.push(el('div', { class: 'status', html: '<b>Procurando rostos…</b><br>Isso roda no seu aparelho; as fotos não saem daqui. Na primeira vez demora um pouco.<div class="bar"><i id="faceBar"></i></div><div id="faceTxt" style="margin-top:6px;font-size:12.5px"></div>' }));
+    setTimeout(() => setProgress(FACE.progress), 0);
+    return out;
+  }
+  if (FACE.status === 'error') {
+    out.push(el('div', { class: 'status' }, FACE.msg, el('div', { style: 'margin-top:12px' },
+      el('button', { class: 'btn', onclick: () => { FACE.status = 'idle'; route(); } }, 'Tentar de novo'))));
+    return out;
+  }
+  out.push(el('div', { class: 'status' }, el('b', {}, FACE.people.length + (FACE.people.length === 1 ? ' pessoa' : ' pessoas')), ' encontradas. Toque em uma para ver as fotos dela e dar um nome. Se a mesma pessoa aparecer duas vezes, use “É a mesma pessoa que…” dentro do perfil.'));
+  const g = el('div', { class: 'people' });
+  FACE.people.forEach(p => {
+    g.append(el('a', { class: 'pp', href: base + '-pessoas-' + p.n },
+      el('img', { src: p.crop, alt: p.label }), el('div', { class: 'nm' }, p.label), el('div', { class: 'ct' }, plural(p.photos.length))));
+  });
+  out.push(g);
+  return out;
+}
+
+function viewPessoa(c, pasta, n) {
+  const base = '#' + c.id + '-' + pasta.id.toLowerCase();
+  if (FACE.status !== 'done') { location.hash = base + '-pessoas'; return viewPessoas(c, pasta); }
+  const p = FACE.people.find(x => x.n === n);
+  if (!p) { location.hash = base + '-pessoas'; return viewPessoas(c, pasta); }
+  const lista = p.photos.map(i => DATA.fotos[i]);
+  current = lista;
+  const out = [topbar([{ label: 'Início', href: '#' }, { label: c.nome, href: '#' + c.id }, { label: pasta.nome, href: base }, { label: 'Pessoas', href: base + '-pessoas' }, { label: p.label }])];
+  const inp = el('input', { placeholder: 'Nome (ex.: João)', maxlength: '40', 'aria-label': 'Nome da pessoa' });
+  inp.value = p.name;
+  inp.addEventListener('change', () => { nomear(p, inp.value); toast('Nome salvo neste aparelho.'); route(); });
+  out.push(el('div', { class: 'phead' }, el('img', { src: p.crop, alt: '' }), el('div', { style: 'flex:1;min-width:0' }, inp, el('small', {}, plural(lista.length)))));
+  const row = el('div', { class: 'row' });
+  row.append(el('button', { class: 'btn', html: ICON_DL, onclick: () => baixarVarias(lista) }, 'Baixar todas (' + lista.length + ')'));
+  if (FACE.people.length > 1) {
+    const sel = el('select', { class: 'btn ghost', 'aria-label': 'Juntar com outra pessoa' }, el('option', { value: '' }, 'É a mesma pessoa que…'));
+    FACE.people.filter(x => x.id !== p.id).forEach(x => sel.append(el('option', { value: x.id }, x.label)));
+    sel.addEventListener('change', () => {
+      if (!sel.value) return;
+      const outra = FACE.people.find(x => x.id === sel.value);
+      const nome = p.name || (outra && outra.name) || '';
+      merges.push([p.id, sel.value]); store.set('vetor_uniao_v1', merges);
+      buildPeople();
+      const novo = FACE.people.find(x => x.keys.includes(p.id));
+      if (novo && nome && !novo.name) { nomear(novo, nome); }
+      const alvoHash = base + '-pessoas-' + (novo ? novo.n : 1);
+      if (location.hash.toLowerCase() === alvoHash.toLowerCase()) route(); else location.hash = alvoHash;
+    });
+    row.append(sel);
+  }
+  out.push(row);
+  out.push(photoGrid(lista));
+  return out;
+}
+
+const ICON_IG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg>';
+const INSTAGRAMS = [
+  { handle: 'vetordigital.lp', url: 'https://www.instagram.com/vetordigital.lp/' },
+  { handle: 'rayon_videomaker', url: 'https://www.instagram.com/rayon_videomaker/' }
+];
+function footer() {
+  return el('footer', { class: 'foot' }, INSTAGRAMS.map(i =>
+    el('a', { class: 'ig', href: i.url, target: '_blank', rel: 'noopener', html: ICON_IG }, '@' + i.handle)));
+}
+
+function route() {
+  closeLb();
+  const h = decodeURIComponent(location.hash.replace(/^#/, '')).toLowerCase();
+  const [cid, sub, ext, num] = h.split('-');
+  const c = clienteById(cid);
+  let nodes;
+  if (!h || !c) nodes = viewHome();
+  else if (!sub) nodes = viewCliente(c);
+  else {
+    const p = c.pastas.find(p => p.id.toLowerCase() === sub);
+    if (!p) nodes = viewCliente(c);
+    else if (ext === 'pessoas') nodes = num ? viewPessoa(c, p, parseInt(num, 10)) : viewPessoas(c, p);
+    else nodes = viewGaleria(c, p);
+  }
+  app.replaceChildren(...nodes, footer());
+  window.scrollTo(0, 0);
+}
+
+/* download livre */
+async function baixar(f) {
+  const nome = f.codigo + '.jpg';
+  try {
+    const blob = await (await fetch(f.src)).blob();
+    const file = new File([blob], nome, { type: 'image/jpeg' });
+    if (navigator.canShare && navigator.canShare({ files: [file] }) && /iPhone|iPad|Android/i.test(navigator.userAgent)) {
+      await navigator.share({ files: [file] }); return;
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (e) {
+    if (e && e.name === 'AbortError') return;
+    window.open(f.src, '_blank');
+  }
+}
+async function baixarVarias(lista) {
+  toast('Baixando ' + lista.length + ' fotos…');
+  for (const f of lista) { await baixar(f); await new Promise(r => setTimeout(r, 600)); }
+}
+function actionFor(f) {
+  document.getElementById('lbCredit').textContent = 'Foto por ' + clienteById(f.cliente).credito + ' | Filmmaker';
+  return el('button', { class: 'btn', html: ICON_DL, onclick: () => baixar(f) }, 'Baixar foto');
+}
+let tt;
+function toast(t) {
+  const n = document.getElementById('toast');
+  n.textContent = t; n.hidden = false;
+  clearTimeout(tt); tt = setTimeout(() => { n.hidden = true; }, 3500);
+}
+
+/* visualizador */
+function openLb(i) { idx = i; lb.hidden = false; document.body.style.overflow = 'hidden'; showLb(); document.getElementById('lbClose').focus(); }
+function closeLb() { if (lb.hidden) return; lb.hidden = true; document.body.style.overflow = ''; }
+function showLb() {
+  const f = current[idx];
+  if (!f) return;
+  document.getElementById('lbImg').src = f.src;
+  document.getElementById('lbImg').alt = 'Foto ' + f.codigo;
+  const code = document.getElementById('lbCode');
+  code.replaceChildren(f.codigo, el('small', {}, (idx + 1) + ' de ' + current.length));
+  document.getElementById('lbAction').replaceChildren(actionFor(f));
+  const chips = document.getElementById('lbChips'); chips.replaceChildren();
+  if (FACE.status === 'done') {
+    FACE.people.filter(p => p.photos.includes(f.i)).forEach(p => {
+      chips.append(el('a', { class: 'chip', href: '#' + f.cliente + '-' + f.pasta.toLowerCase() + '-pessoas-' + p.n }, el('img', { src: p.crop, alt: '' }), p.label));
+    });
+  }
+  const many = current.length > 1;
+  document.getElementById('lbPrev').hidden = !many;
+  document.getElementById('lbNext').hidden = !many;
+}
+function step(d) { idx = (idx + d + current.length) % current.length; showLb(); }
+document.getElementById('lbClose').addEventListener('click', closeLb);
+document.getElementById('lbPrev').addEventListener('click', () => step(-1));
+document.getElementById('lbNext').addEventListener('click', () => step(1));
+document.addEventListener('keydown', e => {
+  if (lb.hidden) return;
+  if (e.key === 'Escape') closeLb();
+  if (e.key === 'ArrowLeft') step(-1);
+  if (e.key === 'ArrowRight') step(1);
+});
+
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body></html>
