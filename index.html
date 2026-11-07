@@ -203,15 +203,9 @@ const store = {
 let names = store.get('vetor_nomes_v1') || {};     // chave do rosto -> nome
 let merges = store.get('vetor_uniao_v1') || [];    // [[chaveA, chaveB], ...]
 
-function topbar(crumbs) {
-  const nav = el('nav', { class: 'crumbs', 'aria-label': 'Navegação' });
-  crumbs.forEach((c, i) => {
-    if (i) nav.append(el('i', { 'aria-hidden': 'true' }, '/'));
-    nav.append(c.href ? el('a', { href: c.href }, c.label) : el('span', { 'aria-current': 'page' }, c.label));
-  });
+function topbar() {
   return el('header', { class: 'top' },
-    el('a', { class: 'brand', href: '#', html: LOGO + '<div><b>Vetor Digital</b><span>Galeria</span></div>' }),
-    nav);
+    el('a', { class: 'brand', href: '#', html: LOGO + '<div><b>Vetor Digital</b><span>Galeria</span></div>' }));
 }
 
 function folderCard(href, nome, desc, n) {
@@ -227,21 +221,10 @@ function notice() {
 }
 
 function viewHome() {
-  const out = [topbar([{ label: 'Início' }])];
-  out.push(el('div', { class: 'head' },
-    el('h1', {}, 'Galeria de fotos'),
-    el('p', { class: 'lead' }, 'Escolha uma pasta, veja as fotos e baixe as suas.')));
+  const out = [topbar()];
+  out.push(el('div', { class: 'head' }, el('h1', {}, 'Pastas'), el('p', { class: 'lead' }, 'Escolha uma pasta, veja as fotos e baixe as suas.')));
   const folders = el('div', { class: 'folders' });
-  DATA.clientes.forEach(c => folders.append(folderCard('#' + c.id, c.nome, c.descricao, fotosDe(c.id).length)));
-  out.push(folders);
-  return out;
-}
-
-function viewCliente(c) {
-  const out = [topbar([{ label: 'Início', href: '#' }, { label: c.nome }])];
-  out.push(el('div', { class: 'head' }, el('h1', {}, c.nome), el('p', { class: 'lead' }, c.descricao + '.')));
-  const folders = el('div', { class: 'folders' });
-  c.pastas.forEach(p => folders.append(folderCard('#' + c.id + '-' + p.id.toLowerCase(), p.nome, p.descricao, fotosDe(c.id, p.id).length)));
+  DATA.clientes.forEach(c => c.pastas.forEach(p => folders.append(folderCard('#' + c.id + '-' + p.id.toLowerCase(), p.nome, p.descricao, fotosDe(c.id, p.id).length))));
   out.push(folders);
   return out;
 }
@@ -270,7 +253,7 @@ function photoGrid(list) {
 function viewGaleria(c, pasta) {
   const fotos = fotosDe(c.id, pasta.id);
   current = fotos;
-  const out = [topbar([{ label: 'Início', href: '#' }, { label: c.nome, href: '#' + c.id }, { label: pasta.nome }])];
+  const out = [topbar()];
   out.push(el('div', { class: 'head' }, el('h1', {}, pasta.nome), el('p', { class: 'lead' }, plural(fotos.length) + ' · ' + pasta.descricao)));
   out.push(creditBlock(c));
   out.push(tabs(c, pasta, 'fotos'));
@@ -379,7 +362,7 @@ async function analisar() {
 function nomear(p, nome) { names[p.id] = nome.trim(); store.set('vetor_nomes_v1', names); buildPeople(); }
 
 function peopleHeader(c, pasta, titulo, lead) {
-  return [topbar([{ label: 'Início', href: '#' }, { label: c.nome, href: '#' + c.id }, { label: pasta.nome, href: '#' + c.id + '-' + pasta.id.toLowerCase() }, { label: titulo }]),
+  return [topbar(),
     el('div', { class: 'head' }, el('h1', {}, titulo), el('p', { class: 'lead' }, lead))];
 }
 
@@ -415,7 +398,7 @@ function viewPessoa(c, pasta, n) {
   if (!p) { location.hash = base + '-pessoas'; return viewPessoas(c, pasta); }
   const lista = p.photos.map(i => DATA.fotos[i]);
   current = lista;
-  const out = [topbar([{ label: 'Início', href: '#' }, { label: c.nome, href: '#' + c.id }, { label: pasta.nome, href: base }, { label: 'Pessoas', href: base + '-pessoas' }, { label: p.label }])];
+  const out = [topbar()];
   const inp = el('input', { placeholder: 'Nome (ex.: João)', maxlength: '40', 'aria-label': 'Nome da pessoa' });
   inp.value = p.name;
   inp.addEventListener('change', () => { nomear(p, inp.value); toast('Nome salvo neste aparelho.'); route(); });
@@ -460,10 +443,10 @@ function route() {
   const c = clienteById(cid);
   let nodes;
   if (!h || !c) nodes = viewHome();
-  else if (!sub) nodes = viewCliente(c);
+  else if (!sub) nodes = viewHome();
   else {
     const p = c.pastas.find(p => p.id.toLowerCase() === sub);
-    if (!p) nodes = viewCliente(c);
+    if (!p) nodes = viewHome();
     else if (ext === 'pessoas') nodes = num ? viewPessoa(c, p, parseInt(num, 10)) : viewPessoas(c, p);
     else nodes = viewGaleria(c, p);
   }
